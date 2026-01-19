@@ -1,0 +1,23 @@
+# Ignore everything in data and data/api
+data/*
+data/api/*
+
+# Re-allow directories so Git can traverse them
+!data/api/
+!data/conversations/
+!data/example/
+
+# Re-allow wanted files
+!data/api/example_main.py
+!data/api/example_routes.py
+
+# Re-allow all files in these folders
+!data/conversations/**
+!data/example/**
+
+# LLM templates rule 
+llm/templates/*
+!llm/templates/example.txt
+
+.vscode
+.env
