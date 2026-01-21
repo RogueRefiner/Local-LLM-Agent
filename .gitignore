@@ -8,8 +8,9 @@ data/api/*
 !data/example/
 
 # Re-allow wanted files
-!data/api/example_main.py
+!data/api/main.py
 !data/api/example_routes.py
+!data/api/conversation_routes.py
 
 # Re-allow all files in these folders
 !data/conversations/**

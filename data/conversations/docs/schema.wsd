@@ -1,0 +1,43 @@
+@startuml Conversations DB Schemas
+entity "conversations" as conversations {
+    * id: UUID <<PK>>
+    --
+    title: text
+    system_prompt: text
+    model_name: text
+    source_id: UUID <<FK>>
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+entity "messages" as messages {
+    * id: UUID <<PK>>
+    --
+    * conversation_id: UUID <<FK>>
+    content: text
+    role: ERole (system, user)
+    timestamp: DateTime
+}
+
+entity "keywords" as keywords {
+    * id: integer <<PK>>
+    --
+    word: text UNIQUE
+}
+
+entity "conversation_keywords" as conv_tags {
+    * conversation_id: UUID <<FK>>
+    * keyword_id: integer <<FK>>
+}
+
+entity "sources" as sources {
+    * id: UUID <<PK>>
+    --
+    type: EType
+    topic: string
+}
+
+conversations "1" -- "1..*" messages
+conversations "0..*" -- "0..*" keywords
+conversations "0..*" -- "1" sources
+@enduml
