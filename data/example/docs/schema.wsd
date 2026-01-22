@@ -9,7 +9,7 @@ entity "students" as students {
     relationship_status: ERelationshipStatus
     age: integer
     avg_daily_usage_hours: float
-    affects_academic_performance: EAffectsAcademicPerformance
+    affects_academic_performance: boolean
     sleep_hours_per_night: float
     mental_health_score: integer
     conflicts_over_social_media: integer
@@ -34,7 +34,7 @@ entity "countries" as countries {
     country_name: text
 }
 
-entity "platform" as platform {
+entity "platforms" as platforms {
     * id: number <<PK>> 
     --
     platform: EPlatform

@@ -1,6 +1,7 @@
 # How to run: 
 ## Prerequisites
 - Docker
+- https://ollama.com/download
 
 ## Install uv
 https://docs.astral.sh/uv/getting-started/installation/
@@ -10,6 +11,8 @@ https://docs.astral.sh/uv/getting-started/installation/
 - Activate the virtual environment with `source .venv/bin/activate`
 - Install all necessary python packages to run the project with `uv sync`
 - Start the docker container in `data/conversations/docker-compose.yml` with `docker-compose up`
+- Pull the model with `ollama pull qwen2.5-coder:7b` (or any other model)
+
 
 ## The different components
 ### llm
