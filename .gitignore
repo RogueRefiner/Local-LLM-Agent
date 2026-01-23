@@ -6,6 +6,7 @@ data/api/*
 !data/api/
 !data/conversations/
 !data/example/
+!data/example_main.py
 
 # Re-allow wanted files
 !data/api/main.py
@@ -25,3 +26,4 @@ llm/templates/*
 .venv
 __pycache__
 uv.lock
+dbdata

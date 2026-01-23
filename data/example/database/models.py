@@ -85,13 +85,3 @@ class Platform(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     platform: Mapped[EPlatform]
-
-
-def __dir__():
-    return [
-        AcademicLevel.__doc__,
-        Country.__doc__,
-        Gender.__doc__,
-        Platform.__doc__,
-        Student.__doc__,
-    ]

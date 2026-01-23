@@ -1,9 +1,11 @@
+# TODO: remove
 from data.example.database.models import Base
 
 
 def get_model_docs():
     docs = {}
     for model in Base.__subclasses__():
+        print(f"model: {vars(model)['__annotations__']}")
         docs[model.__name__] = (
             model.__doc__.strip() if model.__doc__ else "No description available."
         )
