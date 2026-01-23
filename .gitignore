@@ -1,25 +1,25 @@
 # Ignore everything in data and data/api
-data/*
-data/api/*
+src/data/*
+src/data/api/*
 
 # Re-allow directories so Git can traverse them
-!data/api/
-!data/conversations/
-!data/example/
-!data/example_main.py
+!src/data/api/
+!src/data/conversations/
+!src/data/example/
+!src/data/example_main.py
 
 # Re-allow wanted files
-!data/api/main.py
-!data/api/example_routes.py
-!data/api/conversation_routes.py
+!src/data/api/main.py
+!src/data/api/example_routes.py
+!src/data/api/conversation_routes.py
 
 # Re-allow all files in these folders
-!data/conversations/**
-!data/example/**
+!src/data/conversations/**
+!src/data/example/**
 
 # LLM templates rule 
-llm/templates/*
-!llm/templates/example.txt
+src/llm/templates/*
+!src/llm/templates/example.txt
 
 .vscode
 .env
@@ -27,3 +27,4 @@ llm/templates/*
 __pycache__
 uv.lock
 dbdata
+local_llm_assistant.egg-info

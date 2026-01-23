@@ -1,9 +1,12 @@
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 import os
+import sys
+from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine.base import Engine
-from example.database.models import Base
+from data.example.database.models import Base
+from utils.logger.app_logger import ApplicationLogger
 
 
 @dataclass
@@ -15,6 +18,9 @@ class DatabaseManager:
     port: str
     dialect: str
     driver: str
+    database_logger: ApplicationLogger = field(
+        default_factory=lambda: ApplicationLogger()
+    )
     engine: Engine = field(init=False)
 
     def __post_init__(self) -> None:
@@ -33,7 +39,7 @@ class DatabaseManager:
                     created_tables.all()
                 ), "Error when generating tables"
         except Exception as e:
-            print(f"Error connecting: {e}")
+            self.database_logger.error(f"Error when initializing DatabaseManager: {e}")
 
 
 def load_db_config() -> DatabaseManager:
