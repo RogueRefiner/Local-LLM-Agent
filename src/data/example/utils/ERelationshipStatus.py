@@ -2,6 +2,6 @@ from enum import Enum
 
 
 class ERelationshipStatus(Enum):
-    SINGLE = "single"
-    IN_RELATIONSHIP = "in relationship"
-    COMPLICATED = "complicated"
+    SINGLE = "SINGLE"
+    IN_RELATIONSHIP = "IN_RELATIONSHIP"
+    COMPLICATED = "COMPLICATED"
