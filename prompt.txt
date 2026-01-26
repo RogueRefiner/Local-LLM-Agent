@@ -1,0 +1,33 @@
+@dataclass
+class ApiService:
+    api_logger: ApplicationLogger = field(default_factory=lambda: ApplicationLogger())
+
+    def build_final_prompt(self, prompt: str, template_name: str) -> str:
+        file_path = Path(f"src/llm/templates/{template_name}.txt")
+
+        try:
+            assert os.path.exists(
+                file_path
+            ), f"Error {template_name} does not exists in {Path('templates/')}"
+        except AssertionError as e:
+            self.api_logger.error(f"Error when building final prompt template: {e}")
+
+        with open(file_path) as file:
+            template = Template("\n".join(file.readlines()))
+            prompt = template.safe_substitute(prompt=prompt)
+
+        self.api_logger.debug("Fetched prompt tempate and injected the prompt")
+
+        return prompt
+
+    def run_prompt(self, prompt: str) -> None:
+        self.api_logger.debug("Running prompt")
+        response = chat(
+            model="qwen2.5-coder:7b",
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+
+        for chunk in response:
+            print(chunk.message.content, end="", flush=True)
+        print("\n")

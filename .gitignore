@@ -2,6 +2,9 @@
 src/data/*
 src/data/api/*
 
+src/llm/api/routes.py
+src/llm/main.py
+
 # Re-allow directories so Git can traverse them
 !src/data/api/
 !src/data/conversations/
@@ -20,6 +23,7 @@ src/data/api/*
 # LLM templates rule 
 src/llm/templates/*
 !src/llm/templates/example.txt
+!src/llm/templates/generate_docstring.txt
 
 .vscode
 .env

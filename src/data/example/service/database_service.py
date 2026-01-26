@@ -65,14 +65,7 @@ class DatabaseService:
         Returns:
             None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
         """
-        data = [
-            (
-                {"gender": EGender.FEMALE.value}
-                if gender == "Female"
-                else {"gender": EGender.MALE.value}
-            )
-            for gender in genders
-        ]
+        data = [{"gender": EGender(gender.upper()).value} for gender in genders]
         self.logger.debug(f"data: {data}")
         gender_ids = self.database_manager.insert(table_name, data)
 

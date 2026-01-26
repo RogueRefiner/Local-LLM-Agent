@@ -59,3 +59,20 @@ class ApplicationLogger:
 
     def critical(self, msg: str) -> None:
         self.logger.opt(depth=1).critical(msg)
+
+
+def get_application_logger() -> ApplicationLogger:
+    """
+    Returns an instance of the ApplicationLogger class.
+
+    This method provides a way to obtain a logger that can be used
+    for logging messages within the application. The returned logger
+    is an instance of the `ApplicationLogger` class, which is responsible
+    for handling and formatting log messages according to the application's
+    requirements.
+
+    Returns:
+        ApplicationLogger: An instance of the ApplicationLogger class,
+                         ready to be used for logging.
+    """
+    return ApplicationLogger()
