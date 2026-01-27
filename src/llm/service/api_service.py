@@ -34,14 +34,16 @@ class ApiService:
         Raises:
             AssertionError: If the template does not exist in the templates directory.
         """
-        file_path = Path(f"src/llm/templates/{template_name}.txt")
+        file_path = Path(f"templates/{template_name}.txt")
 
         try:
             assert os.path.exists(
                 file_path
             ), f"Error {template_name} does not exists in {Path('templates/')}"
         except AssertionError as e:
-            self.api_logger.error(f"Error when building final prompt template: {e}")
+            error_msg = f"Error when building final prompt template: {e}"
+            self.api_logger.error(error_msg)
+            raise AssertionError(error_msg)
 
         with open(file_path) as file:
             template = Template("\n".join(file.readlines()))
@@ -55,7 +57,6 @@ class ApiService:
         """Runs the provided prompt through a chat model.
 
         Args:
-
             prompt (str): The prompt to be sent to the chat model.
         """
         self.api_logger.debug("Running prompt")

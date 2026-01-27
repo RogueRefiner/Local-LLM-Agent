@@ -41,3 +41,13 @@ class DatabaseController:
             df (pd.DataFrame): The pandas DataFrame to be inserted into the database.
         """
         self.database_service.insert_data(df)
+
+
+def get_database_controller() -> DatabaseController:
+    """
+    Returns a new instance of DatabaseController.
+
+    Returns:
+        DatabaseController: A new instance of DatabaseController with default values for its attributes.
+    """
+    return DatabaseController()

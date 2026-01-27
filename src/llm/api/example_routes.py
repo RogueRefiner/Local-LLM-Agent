@@ -12,7 +12,7 @@ async def execute_prompt(
     request: PromptRequest,
     api_controller: ApiControlller = Depends(get_api_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
-) -> None:
+) -> JSONResponse:
     """
     Executes a prompt using the provided request data.
 
@@ -27,4 +27,11 @@ async def execute_prompt(
     api_logger.debug(f"/prompt endpoint called with request: {request}")
     prompt = api_controller.build_final_prompt(request.prompt, request.template_name)
     api_controller.run_prompt(prompt)
-    api_logger.debug(f"prompt execution finished")
+    api_logger.debug(f"Prompt execution finished")
+
+    return JSONResponse(
+        content={
+            "status": "success",
+            "template": request.template_name,
+        }
+    )

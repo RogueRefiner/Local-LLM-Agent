@@ -1,10 +1,12 @@
-from data.example.controller.database_controller import DatabaseController
-from fastapi import FastAPI
+from data.example.controller.database_controller import (
+    DatabaseController,
+    get_database_controller,
+)
+from fastapi import FastAPI, Depends
 from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-db_controller: DatabaseController = DatabaseController()
 app = FastAPI()
 load_dotenv()
 
@@ -16,11 +18,33 @@ else:
 
 
 @app.get("/")
-async def root():
-    if insert_data:
-        df = db_controller.read_csv(
-            Path("src/data/example/datasets/Students_Social_Media_Addiction.csv"),
-            "Student_ID",
-        )
-        db_controller.insert_data(df)
+async def health_check():
+    """
+    Check if the application is healthy.
+
+    Returns:
+        dict: A dictionary with a message key indicating health status.
+    """
     return {"message": "Hello World"}
+
+
+@app.post("/students/import")
+async def import_students(
+    db_controller: DatabaseController = Depends(get_database_controller),
+):
+    """
+    Import students data from a CSV file into the   WARNING   WatchFiles detected changes in 'src/data/example_main.py'. Reloading...
+    database.
+
+    Args:
+        None
+
+    Returns:
+        dict: A dictionary with a status key indicating the import completion.
+    """
+    df = db_controller.read_csv(
+        Path("src/data/example/datasets/Students_Social_Media_Addiction.csv"),
+        "Student_ID",
+    )
+    db_controller.insert_data(df)
+    return {"status": "import completed"}

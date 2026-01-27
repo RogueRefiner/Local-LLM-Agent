@@ -1,0 +1,12 @@
+@app.get("/")
+async def health_check():
+    return {"message": "Hello World"}
+
+@app.post("/students/import")
+async def import_students():
+    df = db_controller.read_csv(
+        Path("src/data/example/datasets/Students_Social_Media_Addiction.csv"),
+        "Student_ID",
+    )
+    db_controller.insert_data(df)
+    return {"status": "import completed"}
