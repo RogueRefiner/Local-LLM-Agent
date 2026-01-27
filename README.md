@@ -2,6 +2,7 @@
 ## Prerequisites
 - Docker
 - https://ollama.com/download
+- jq, when using the test.sh + prompt.txt combination for multiline strings
 
 ## Install uv
 https://docs.astral.sh/uv/getting-started/installation/
@@ -16,11 +17,13 @@ https://docs.astral.sh/uv/getting-started/installation/
 
 ## The different components
 ### llm
-- Start the API with `python llm/main.py`
+- Start the API with `python src/llm/example_main.py`
 
 ### database
-- Start the docker container in `data/conversations/example/docker-compose.yml` with `docker-compose up`
-- Start the API with `data/api/example_api.py`
+- Start the docker container in `src/data/example/docker-compose.yml` with `docker-compose up`
+- Start the conversation docker container in `src/data/conversation/docker-compose.yml` with `docker-compose up`
+- Start the API with `src/data/example_main.py`
+- Fill the example database with 
 
 ### cli 
 - Start the CLI tool with `python cli/main.py`
