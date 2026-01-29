@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class EGender(Enum):
+class EGender(str, Enum):
     FEMALE = "FEMALE"
     MALE = "MALE"

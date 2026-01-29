@@ -71,12 +71,15 @@ class DatabaseManager:
         except Exception as e:
             self.database_logger.error(f"Error when initializing DatabaseManager: {e}")
 
-    def insert(self, table_name: str, data: list[dict[str, Any]]) -> None | list[int]:
+    def insert(
+        self, table_name: str, column_name: str, data: list[dict[str, Any]]
+    ) -> None | dict[int, str]:
         """
         Inserts data into a specified database table.
 
         Args:
             table_name (str): The name of the table to insert data into.
+            column_name (str): The name of the column later used as foreign key.
             data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row of data to be inserted.
 
         Returns:
@@ -93,10 +96,15 @@ class DatabaseManager:
 
         with self.engine.begin() as connection:
             result = connection.execute(statement, data)
+            values = [d[column_name] for d in data]
             ids = list(result.scalars().all())
+            self.database_logger.debug(f"values: {values}\nids: {ids}")
+            id_to_value_dict = dict(zip(ids, values))
+            self.database_logger.debug(f"id_to_value_dict: {id_to_value_dict}")
+
             self.database_logger.debug(f"Inserted Rows: {result.rowcount}")
 
-        return ids
+        return id_to_value_dict
 
 
 def load_db_config() -> DatabaseManager:

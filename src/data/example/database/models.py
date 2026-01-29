@@ -1,5 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Boolean, Double, ForeignKey, Integer, Text
+from sqlalchemy import Enum as SQLEnum
 from ..utils.EGender import EGender
 from ..utils.EAcademicLevel import EAcademicLevel
 from ..utils.EPlatform import EPlatform
@@ -26,7 +27,15 @@ class Student(Base):
     country_id: Mapped[int] = mapped_column(ForeignKey("countries.id"))
     platform_id: Mapped[int] = mapped_column(ForeignKey("platforms.id"))
 
-    relationship_status: Mapped[ERelationshipStatus]
+    relationship_status: Mapped[ERelationshipStatus] = mapped_column(
+        SQLEnum(
+            ERelationshipStatus,
+            name="erelationshipstatus",
+            native_enum=True,
+            validate_strings=False,
+        ),
+        nullable=False,
+    )
     age: Mapped[int] = mapped_column(Integer)
 
     avg_daily_usage_hours: Mapped[int] = mapped_column(Integer)
@@ -47,7 +56,15 @@ class Gender(Base):
     __tablename__ = "genders"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    gender: Mapped[EGender]
+    gender: Mapped[EGender] = mapped_column(
+        SQLEnum(
+            EGender,
+            name="egender",
+            native_enum=True,
+            validate_strings=False,
+        ),
+        nullable=False,
+    )
 
 
 class AcademicLevel(Base):
@@ -59,7 +76,15 @@ class AcademicLevel(Base):
     __tablename__ = "academic_levels"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    academic_level: Mapped[EAcademicLevel]
+    academic_level: Mapped[EAcademicLevel] = mapped_column(
+        SQLEnum(
+            EAcademicLevel,
+            name="eacademiclevel",
+            native_enum=True,
+            validate_strings=False,
+        ),
+        nullable=False,
+    )
 
 
 class Country(Base):
@@ -84,4 +109,12 @@ class Platform(Base):
     __tablename__ = "platforms"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    platform: Mapped[EPlatform]
+    platform: Mapped[EPlatform] = mapped_column(
+        SQLEnum(
+            EPlatform,
+            name="eplatform",
+            native_enum=True,
+            validate_strings=False,
+        ),
+        nullable=False,
+    )

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class EAcademicLevel(Enum):
+class EAcademicLevel(str, Enum):
     UNDERGRADUATE = "UNDERGRADUATE"
     GRADUATE = "GRADUATE"
-    HIGH_SCHOOL = "HIGH_SCHOOL"
+    HIGH_SCHOOL = "HIGH SCHOOL"

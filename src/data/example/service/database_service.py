@@ -39,82 +39,103 @@ class DatabaseService:
         Args:
             df (pd.DataFrame): The DataFrame containing the data to be inserted.
         """
-        gender_ids = self.__insert_genders("genders", df["Gender"].unique())
+        gender_ids = self.__insert_genders("genders", "gender", df["Gender"].unique())
         self.logger.debug(f"gender_ids: {gender_ids}")
         academic_level_ids = self.__insert_academic_levels(
-            "academic_levels", df["Academic_Level"].unique()
+            "academic_levels", "academic_level", df["Academic_Level"].unique()
         )
         self.logger.debug(f"academic_level_ids: {academic_level_ids}")
-        country_ids = self.__insert_countries("countries", df["Country"].unique())
+        country_ids = self.__insert_countries(
+            "countries", "country_name", df["Country"].unique()
+        )
         self.logger.debug(f"country_ids: {country_ids}")
         platform_ids = self.__insert_platforms(
-            "platform", df["Most_Used_Platform"].unique()
+            "platforms", "platform", df["Most_Used_Platform"].unique()
         )
         self.logger.debug(f"platform_ids: {platform_ids}")
 
     def __insert_genders(
-        self, table_name: str, genders: np.ndarray
-    ) -> None | list[int]:
+        self, table_name: str, column_name: str, genders: np.ndarray
+    ) -> None | dict[int, str]:
         """
         Inserts gender data into the specified table.
 
         Args:
             table_name (str): The name of the table to insert data into.
+            column_name (str): The name of the column later used as foreign key.
             genders (np.ndarray): An array containing unique gender values.
 
         Returns:
-            None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
+            None or dict[int, str]: If successful, returns a dict mapping the inserted ids to the values. Otherwise, returns None.
         """
-        data = [{"gender": EGender(gender.upper()).value} for gender in genders]
+        data = [{column_name: EGender(gender.upper()).value} for gender in genders]
         self.logger.debug(f"data: {data}")
-        gender_ids = self.database_manager.insert(table_name, data)
+        gender_ids = self.database_manager.insert(table_name, column_name, data)
 
         return gender_ids
 
     def __insert_academic_levels(
-        self, table_name: str, academic_levels: np.ndarray
-    ) -> None | list[int]:
+        self, table_name: str, column_name: str, academic_levels: np.ndarray
+    ) -> None | dict[int, str]:
         """
         Inserts academic level data into the database.
 
         Args:
             table_name (str): The name of the table to insert data into.
+            column_name (str): The name of the column later used as foreign key.
             academic_levels (np.ndarray): An array containing unique academic level values.
 
         Returns:
-            None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
+            None or dict[int, str]: If successful, returns a dict mapping the inserted ids to the values. Otherwise, returns None.
         """
-        pass
+        data = [
+            {column_name: EAcademicLevel(academic_level.upper()).name}
+            for academic_level in academic_levels
+        ]
+        self.logger.debug(f"data: {data}")
+        academic_level_ids = self.database_manager.insert(table_name, column_name, data)
+
+        return academic_level_ids
 
     def __insert_countries(
-        self, table_name: str, countries: np.ndarray
-    ) -> None | list[int]:
+        self, table_name: str, column_name: str, countries: np.ndarray
+    ) -> None | dict[int, str]:
         """
         Inserts country data into the database.
 
         Args:
             table_name (str): The name of the table to insert data into.
+            column_name (str): The name of the column later used as foreign key.
             countries (np.ndarray): An array containing unique country values.
 
         Returns:
-            None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
+            None or dict[int, str]: If successful, returns a dict mapping the inserted ids to the values. Otherwise, returns None.
         """
-        pass
+        data = [{"country_name": country} for country in countries]
+        self.logger.debug(f"data: {data}")
+        country_ids = self.database_manager.insert(table_name, column_name, data)
+
+        return country_ids
 
     def __insert_platforms(
-        self, table_name: str, platforms: np.ndarray
-    ) -> None | list[int]:
+        self, table_name: str, column_name: str, platforms: np.ndarray
+    ) -> None | dict[int, str]:
         """
         Inserts platform data into the database.
 
         Args:
             table_name (str): The name of the table to insert data into.
+            column_name (str): The name of the column later used as foreign key.
             platforms (np.ndarray): An array containing unique platform values.
 
         Returns:
-            None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
+            None or dict[int, str]: If successful, returns a dict mapping the inserted ids to the values. Otherwise, returns None.
         """
-        pass
+        data = [{column_name: EPlatform(platform.upper())} for platform in platforms]
+        self.logger.debug(f"data: {data}")
+        platform_ids = self.database_manager.insert(table_name, column_name, data)
+
+        return platform_ids
 
     def __insert_students(self, table_name: str, df: pd.DataFrame) -> None:
         """
@@ -123,8 +144,5 @@ class DatabaseService:
         Args:
             table_name (str): The name of the table to insert data into.
             df (pd.DataFrame): The DataFrame containing the student data to be inserted.
-
-        Returns:
-            None or list[int]: If successful, returns a list of IDs for the inserted rows. Otherwise, returns None.
         """
         pass

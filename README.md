@@ -2,7 +2,6 @@
 ## Prerequisites
 - Docker
 - https://ollama.com/download
-- jq, when using the test.sh + prompt.txt combination for multiline strings
 
 ## Install uv
 https://docs.astral.sh/uv/getting-started/installation/
@@ -26,5 +25,5 @@ https://docs.astral.sh/uv/getting-started/installation/
 - Fill the example database with 
 
 ### cli 
-- Start the CLI tool with `python cli/main.py`
+- Start the CLI tool with `python src/cli/main.py`
 - Follow the instructions

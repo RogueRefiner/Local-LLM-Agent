@@ -1,10 +1,10 @@
 from enum import Enum
 
 
-class EPlatform(Enum):
+class EPlatform(str, Enum):
     INSTAGRAM = "INSTAGRAM"
     TWITTER = "TWITTER"
-    TIK_TOK = "TIK_TOK"
+    TIKTOK = "TIKTOK"
     YOUTUBE = "YOUTUBE"
     FACEBOOK = "FACEBOOK"
     LINKEDIN = "LINKEDIN"
