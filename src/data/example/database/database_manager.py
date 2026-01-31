@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from dotenv import load_dotenv
 import os
+from pandas import DataFrame
 from sqlalchemy import MetaData, Table, create_engine, inspect, text
 from sqlalchemy.engine.base import Engine
 from data.example.database.models import Base
@@ -71,9 +72,9 @@ class DatabaseManager:
         except Exception as e:
             self.database_logger.error(f"Error when initializing DatabaseManager: {e}")
 
-    def insert(
+    def insert_dimension_tables(
         self, table_name: str, column_name: str, data: list[dict[str, Any]]
-    ) -> None | dict[int, str]:
+    ) -> None | dict[str, int]:
         """
         Inserts data into a specified database table.
 
@@ -96,15 +97,26 @@ class DatabaseManager:
 
         with self.engine.begin() as connection:
             result = connection.execute(statement, data)
-            values = [d[column_name] for d in data]
+            values = [d[column_name].lower() for d in data]
             ids = list(result.scalars().all())
             self.database_logger.debug(f"values: {values}\nids: {ids}")
-            id_to_value_dict = dict(zip(ids, values))
+            id_to_value_dict = dict(zip(values, ids))
             self.database_logger.debug(f"id_to_value_dict: {id_to_value_dict}")
 
             self.database_logger.debug(f"Inserted Rows: {result.rowcount}")
 
         return id_to_value_dict
+
+    def insert_fact_table(self, table_name: str, data: DataFrame) -> None:
+        """
+        Inserts data into a fact table.
+        Args:
+
+            table_name (str): The name of the table.
+            data (DataFrame): The data to insert.
+        """
+        with self.engine.begin() as connection:
+            data.to_sql(table_name, connection, index=False, if_exists="append")
 
 
 def load_db_config() -> DatabaseManager:

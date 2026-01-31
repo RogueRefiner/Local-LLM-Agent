@@ -1,12 +1,53 @@
-@app.get("/")
-async def health_check():
-    return {"message": "Hello World"}
+def insert_fact_table(self, table_name: str, data: DataFrame) -> None:
+    with self.engine.begin() as connection:
+        data.to_sql(table_name, connection, index=False, if_exists="append")
 
-@app.post("/students/import")
-async def import_students():
-    df = db_controller.read_csv(
-        Path("src/data/example/datasets/Students_Social_Media_Addiction.csv"),
-        "Student_ID",
-    )
-    db_controller.insert_data(df)
-    return {"status": "import completed"}
+    def __insert_students(
+        self,
+        table_name: str,
+        df: pd.DataFrame,
+        gender_ids: None | dict[str, int],
+        academic_level_ids: None | dict[str, int],
+        country_ids: None | dict[str, int],
+        platform_ids: None | dict[str, int],
+    ) -> None:
+        df = self.__prepare_foreign_keys(
+            df, gender_ids, academic_level_ids, country_ids, platform_ids
+        )
+        df = self.__prepare_relationship_status(df, "Relationship_Status")
+        df = self.__prepare_column_names(df)
+        self.database_manager.insert_fact_table(table_name, df)
+
+    def __prepare_foreign_keys(
+        self,
+        df: pd.DataFrame,
+        gender_ids: None | dict[str, int],
+        academic_level_ids: None | dict[str, int],
+        country_ids: None | dict[str, int],
+        platform_ids: None | dict[str, int],
+    ) -> pd.DataFrame:
+        if gender_ids and academic_level_ids and country_ids and platform_ids:
+            df["gender_id"] = [gender_ids[str_val.lower()] for str_val in df["Gender"]]
+            df["country_id"] = [
+                country_ids[str_val.lower()] for str_val in df["Country"]
+            ]
+            df["platform_id"] = [
+                platform_ids[str_val.lower()] for str_val in df["Most_Used_Platform"]
+            ]
+            df["academic_level_id"] = [
+                (
+                    academic_level_ids[str_val.lower()]
+                    if str_val.count(" ") < 1
+                    else academic_level_ids[str_val.replace(" ", "_").lower()]
+                )
+                for str_val in df["Academic_Level"]
+            ]
+        return df
+
+    def __prepare_column_names(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.drop(
+            columns=["Gender", "Country", "Most_Used_Platform", "Academic_Level"]
+        )
+        columns = {column: column.lower() for column in df.columns}
+        df.rename(columns=columns, inplace=True)
+        return df
