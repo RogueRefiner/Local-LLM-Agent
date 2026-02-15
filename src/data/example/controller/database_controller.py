@@ -1,7 +1,12 @@
 from dataclasses import dataclass, field
+from typing import Any, Sequence
 import pandas as pd
+from sqlalchemy import RowMapping
 from data.example.service.database_service import DatabaseService
 from pathlib import Path
+
+from data.example.utils.EAcademicLevel import EAcademicLevel
+from data.example.utils.EGender import EGender
 
 
 @dataclass
@@ -41,6 +46,14 @@ class DatabaseController:
             df (pd.DataFrame): The pandas DataFrame to be inserted into the database.
         """
         self.database_service.insert_data(df)
+
+    def fetch_by_gender_and_academic_level(
+        self, gender: EGender, academic_level: EAcademicLevel
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        return self.database_service.fetch_by_gender_and_academic_level(
+            gender, academic_level
+        )
 
 
 def get_database_controller() -> DatabaseController:

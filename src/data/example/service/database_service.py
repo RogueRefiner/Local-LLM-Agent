@@ -1,4 +1,14 @@
 from dataclasses import dataclass, field
+from typing import Any, Sequence
+
+from sqlalchemy import RowMapping, Sequence, and_, select
+from data.example.database.models import (
+    AcademicLevel,
+    Country,
+    Gender,
+    Platform,
+    Student,
+)
 from utils.logger.app_logger import ApplicationLogger
 from data.example.database.database_manager import DatabaseManager, load_db_config
 import pandas as pd
@@ -251,3 +261,44 @@ class DatabaseService:
         columns = {column: column.lower() for column in df.columns}
         df.rename(columns=columns, inplace=True)
         return df
+
+    def fetch_by_gender_and_academic_level(
+        self, gender: EGender, academic_level: EAcademicLevel
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        with self.database_manager.engine.begin() as connection:
+            query = (
+                (
+                    select(
+                        Student.id,
+                        Student.relationship_status,
+                        Student.age,
+                        Student.avg_daily_usage_hours,
+                        Student.affects_academic_performance,
+                        Student.sleep_hours_per_night,
+                        Student.mental_health_score,
+                        Student.conflicts_over_social_media,
+                        Student.addicted_score,
+                        Gender.gender,
+                        AcademicLevel.academic_level,
+                        Country.country_name,
+                        Platform.platform,
+                    )
+                )
+                .join(Gender, Student.gender_id == Gender.id)
+                .join(AcademicLevel, Student.academic_level_id == AcademicLevel.id)
+                .join(Country, Student.country_id == Country.id)
+                .join(Platform, Student.platform_id == Platform.id)
+                .where(
+                    and_(
+                        Gender.gender == gender,
+                        AcademicLevel.academic_level == academic_level,
+                    )
+                )
+            )
+            self.logger.debug(
+                f"Executing query for gender={gender}, academic_level={academic_level}"
+            )
+            results = connection.execute(query).mappings().all()
+
+        return [dict(result) for result in results]
