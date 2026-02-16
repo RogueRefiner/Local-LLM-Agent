@@ -31,4 +31,5 @@ src/llm/templates/*
 __pycache__
 uv.lock
 dbdata
+example_queries
 local_llm_assistant.egg-info

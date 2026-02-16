@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any, Sequence
 
-from sqlalchemy import RowMapping, Sequence, and_, select
+from sqlalchemy import RowMapping, Select, Sequence, and_, select, func
 from data.example.database.models import (
     AcademicLevel,
     Country,
@@ -268,37 +269,96 @@ class DatabaseService:
         # TODO:
         with self.database_manager.engine.begin() as connection:
             query = (
-                (
-                    select(
-                        Student.id,
-                        Student.relationship_status,
-                        Student.age,
-                        Student.avg_daily_usage_hours,
-                        Student.affects_academic_performance,
-                        Student.sleep_hours_per_night,
-                        Student.mental_health_score,
-                        Student.conflicts_over_social_media,
-                        Student.addicted_score,
-                        Gender.gender,
-                        AcademicLevel.academic_level,
-                        Country.country_name,
-                        Platform.platform,
-                    )
-                )
+                self.__get_base_student_query()
                 .join(Gender, Student.gender_id == Gender.id)
                 .join(AcademicLevel, Student.academic_level_id == AcademicLevel.id)
                 .join(Country, Student.country_id == Country.id)
                 .join(Platform, Student.platform_id == Platform.id)
-                .where(
-                    and_(
-                        Gender.gender == gender,
-                        AcademicLevel.academic_level == academic_level,
-                    )
+            ).where(
+                and_(
+                    Gender.gender == gender,
+                    AcademicLevel.academic_level == academic_level,
                 )
             )
+
             self.logger.debug(
                 f"Executing query for gender={gender}, academic_level={academic_level}"
             )
             results = connection.execute(query).mappings().all()
 
         return [dict(result) for result in results]
+
+    def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
+        # TODO:
+        with self.database_manager.engine.begin() as connection:
+            query = (
+                select(func.avg(Student.avg_daily_usage_hours))
+                .join(Country, Student.country_id == Country.id)
+                .where(Country.country_name == country)
+            )
+            self.logger.debug(f"Executing query for country: {country}")
+            result = connection.execute(query).fetchone()
+            value: Decimal | None = result[0] if result else None
+        return value
+
+    def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
+        # TODO:
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                Student.conflicts_over_social_media > threshold
+            )
+            self.logger.debug(f"Executing query for threshold: {threshold}")
+            results = connection.execute(query).mappings().all()
+
+        return [dict(result) for result in results]
+
+    def fetch_students_by_affected_flag(
+        self, is_affected: bool
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                Student.affects_academic_performance == is_affected
+            )
+            self.logger.debug(f"Executing query for is_affected: {is_affected}")
+            results = connection.execute(query).mappings().all()
+        return [dict(result) for result in results]
+
+    def fetch_students_by_country_and_mental_health(
+        self, country: str, mental_health: int
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                and_(
+                    Country.country_name == country,
+                    Student.mental_health_score == mental_health,
+                )
+            )
+            self.logger.debug(
+                f"Executing query for country: {country} and mental health score: {mental_health}"
+            )
+            results = connection.execute(query).mappings().all()
+        return [dict(result) for result in results]
+
+    def __get_base_student_query(self) -> Select[Any]:
+        # TODO:
+        return (
+            select(
+                Student.id,
+                Student.relationship_status,
+                Student.age,
+                Student.affects_academic_performance,
+                Student.sleep_hours_per_night,
+                Student.mental_health_score,
+                Student.conflicts_over_social_media,
+                Student.addicted_score,
+                Gender.gender,
+                AcademicLevel.academic_level,
+                Country.country_name,
+            )
+            .join(Gender, Student.gender_id == Gender.id)
+            .join(AcademicLevel, Student.academic_level_id == AcademicLevel.id)
+            .join(Country, Student.country_id == Country.id)
+            .join(Platform, Student.platform_id == Platform.id)
+        )

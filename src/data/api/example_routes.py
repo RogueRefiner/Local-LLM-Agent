@@ -1,3 +1,4 @@
+import simplejson as json
 from pathlib import Path
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
@@ -112,4 +113,106 @@ async def fetch_by_gender_and_academic_level(
                 "message": str(e),
             },
             status_code=400,
+        )
+
+
+@router.post("/students/fetch_daily_use_for_country")
+async def fetch_daily_use_for_country(
+    request: Request,
+    db_controller: DatabaseController = Depends(get_database_controller),
+    api_logger: ApplicationLogger = Depends(get_application_logger),
+) -> JSONResponse:
+    # TODO:
+    try:
+        data = await request.json()
+        country = data.get("country")
+
+        api_logger.debug(f"Fetching average daily usage for country: {country}")
+        result = db_controller.fetch_avg_daily_usage_for_country(country)
+        return JSONResponse(
+            content={
+                "status": "success",
+                "value": json.dumps(result, use_decimal=True),
+            }
+        )
+    except Exception as e:
+        api_logger.error(f"Failed to fetch average daily use: {e}")
+        return JSONResponse(
+            content={"status": "failure", "message": str(e)}, status_code=400
+        )
+
+
+@router.post("/students/fetch_conflicts_over_threshold")
+async def fetch_conflicts_over_threshold(
+    request: Request,
+    db_controller: DatabaseController = Depends(get_database_controller),
+    api_logger: ApplicationLogger = Depends(get_application_logger),
+) -> JSONResponse:
+    # TODO
+    try:
+        data = await request.json()
+        threshold = data.get("threshold")
+
+        api_logger.debug(f"Fetching students with conflict score above: {threshold}")
+        results = db_controller.fetch_conflicts_over_threshold(threshold)
+        return JSONResponse(
+            content={"status": "success", "value": results, "count": len(results)}
+        )
+    except Exception as e:
+        api_logger.error(f"Failed to fetch students with conflict score: {e}")
+        return JSONResponse(
+            content={"status": "failure", "message": str(e)}, status_code=400
+        )
+
+
+@router.post("students/fetch_students_by_affected_flag")
+async def fetch_students_by_affected_flag(
+    request: Request,
+    db_controller: DatabaseController = Depends(get_database_controller),
+    api_logger: ApplicationLogger = Depends(get_application_logger),
+) -> JSONResponse:
+    # TODO:
+    try:
+        data = await request.json()
+        is_affected = data.get("is_affected")
+
+        api_logger.debug(f"Fetching students with affected flag: {is_affected}")
+        results = db_controller.fetch_students_by_affected_flag(is_affected)
+        return JSONResponse(
+            content={"status": "success", "value": results, "count": len(results)}
+        )
+    except Exception as e:
+        api_logger.error(f"Failed to fetch students with affected flag: {e}")
+        return JSONResponse(
+            content={"status": "failure", "message": str(e)}, status_code=400
+        )
+
+
+@router.post("students/fetch_student_by_country_and_mental_health_threshold")
+async def fetch_students_by_country_and_mental_health(
+    request: Request,
+    db_controller: DatabaseController = Depends(get_database_controller),
+    api_logger: ApplicationLogger = Depends(get_application_logger),
+) -> JSONResponse:
+    # TODO:
+    try:
+        data = await request.json()
+        country = data.get("country")
+        mental_health_score = data.get("mental_health_score")
+
+        api_logger.debug(
+            f"Fetching students with mental health score: {mental_health_score} in country: {country}"
+        )
+        results = db_controller.fetch_students_by_country_and_mental_health(
+            country, mental_health_score
+        )
+        return JSONResponse(
+            content={"status": "success", "value": results, "count": len(results)}
+        )
+    except Exception as e:
+        api_logger.error(
+            f"Failed to fetch students with mental health threshold from a specific country"
+        )
+        return JSONResponse(
+            content={"status": "failure", "message": str(e)}, status_code=400
         )

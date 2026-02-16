@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any, Sequence
 import pandas as pd
 from sqlalchemy import RowMapping
@@ -53,6 +54,28 @@ class DatabaseController:
         # TODO:
         return self.database_service.fetch_by_gender_and_academic_level(
             gender, academic_level
+        )
+
+    def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
+        # TODO:
+        return self.database_service.fetch_avg_daily_usage_for_country(country)
+
+    def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
+        # TODO:
+        return self.database_service.fetch_conflicts_over_threshold(threshold)
+
+    def fetch_students_by_affected_flag(
+        self, is_affected: bool
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        return self.database_service.fetch_students_by_affected_flag(is_affected)
+
+    def fetch_students_by_country_and_mental_health(
+        self, country: str, mental_health: int
+    ) -> list[dict[Any, Any]]:
+        # TODO:
+        return self.database_service.fetch_students_by_country_and_mental_health(
+            country, mental_health
         )
 
 
