@@ -1,8 +1,14 @@
 import simplejson as json
 from pathlib import Path
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from utils.request_models import (
+    GenderAndAcademicLevelRequest,
+    AffectedStatusRequest,
+    CountryAndMentalHealthRequest,
+    CountryRequest,
+    ThresholdRequest,
+)
 from data.example.controller.database_controller import (
     DatabaseController,
     get_database_controller,
@@ -23,6 +29,9 @@ else:
     insert_data = False
 
 
+# TODO: add responses to .post methods, BaseModels for each request
+
+
 @router.get("/")
 async def health_check():
     """
@@ -39,7 +48,22 @@ async def health_check():
     )
 
 
-@router.get("/students/import")
+@router.get(
+    "/students/import",
+    responses={
+        200: {
+            "description": "Successful insertion of the csv file",
+            "content": {
+                "application/json": {
+                    "example": {"status": "success", "message": "import completed"}
+                }
+            },
+        },
+        400: {
+            "description": "Insertion of the csv file failed",
+        },
+    },
+)
 async def import_students(
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
@@ -68,34 +92,47 @@ async def import_students(
             content={
                 "status": "success",
                 "message": "import completed",
-            }
+            },
+            status_code=200,
         )
     except Exception as e:
         api_logger.error(f"Failed inserting data: {e}")
-        return JSONResponse(
-            content={
-                "status": "failure",
-                "message": "import failed",
-            }
-        )
+        raise HTTPException(status_code=400, detail="import failed")
 
 
-@router.post("/students/fetch_by_gender_and_level")
+@router.post(
+    "/students/fetch_by_gender_and_level",
+    responses={
+        200: {
+            "description": "Fetch all students with a specific gender and academic level",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "data": "[{'id':703,'relationship_status':'IN RELATIONSHIP','age':21,'affects_academic_performance':true,'sleep_hours_per_night':6.7,'mental_health_score':6,'conflicts_over_social_media':3,'addicted_score':7,'gender':'FEMALE','academic_level':'UNDERGRADUATE','country_name':'China'},"
+                        "{'id':705,'relationship_status':'SINGLE','age':19,'affects_academic_performance':true,'sleep_hours_per_night':6.3,'mental_health_score':5,'conflicts_over_social_media':4,'addicted_score':8,'gender': 'FEMALE','academic_level':'UNDERGRADUATE','country_: '100'  name':'Poland'}]",
+                        "count": "100",
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Failed to fetch students based on a gender and the academic level"
+        },
+    },
+)
 async def fetch_by_gender_and_academic_level(
-    request: Request,
+    request: GenderAndAcademicLevelRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
     # TODO:
     try:
-        data = await request.json()
-        gender = data.get("gender")
-        academic_level = data.get("academic_level")
         api_logger.debug(
-            f"Fetching students: gender={gender}, academic_level={academic_level}"
+            f"Fetching students: gender={request.gender}, academic_level={request.academic_level}"
         )
         results = db_controller.fetch_by_gender_and_academic_level(
-            gender, academic_level
+            EGender(request.gender), EAcademicLevel(request.academic_level)
         )
 
         return JSONResponse(
@@ -103,32 +140,25 @@ async def fetch_by_gender_and_academic_level(
                 "status": "success",
                 "data": results,
                 "count": len(results),
-            }
+            },
+            status_code=200,
         )
     except Exception as e:
-        api_logger.error(f"Failed to fetch students: {e}")
-        return JSONResponse(
-            content={
-                "status": "failure",
-                "message": str(e),
-            },
-            status_code=400,
-        )
+        error = f"Failed to fetch students: {e}"
+        api_logger.error(error)
+        raise HTTPException(status_code=400, detail=error)
 
 
 @router.post("/students/fetch_daily_use_for_country")
 async def fetch_daily_use_for_country(
-    request: Request,
+    request: CountryRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
     # TODO:
     try:
-        data = await request.json()
-        country = data.get("country")
-
-        api_logger.debug(f"Fetching average daily usage for country: {country}")
-        result = db_controller.fetch_avg_daily_usage_for_country(country)
+        api_logger.debug(f"Fetching average daily usage for country: {request.country}")
+        result = db_controller.fetch_avg_daily_usage_for_country(request.country)
         return JSONResponse(
             content={
                 "status": "success",
@@ -136,83 +166,69 @@ async def fetch_daily_use_for_country(
             }
         )
     except Exception as e:
-        api_logger.error(f"Failed to fetch average daily use: {e}")
-        return JSONResponse(
-            content={"status": "failure", "message": str(e)}, status_code=400
-        )
+        error = f"Failed to fetch average daily use: {e}"
+        api_logger.error(error)
+        raise HTTPException(status_code=400, detail=error)
 
 
 @router.post("/students/fetch_conflicts_over_threshold")
 async def fetch_conflicts_over_threshold(
-    request: Request,
+    request: ThresholdRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
     # TODO
     try:
-        data = await request.json()
-        threshold = data.get("threshold")
-
-        api_logger.debug(f"Fetching students with conflict score above: {threshold}")
-        results = db_controller.fetch_conflicts_over_threshold(threshold)
+        api_logger.debug(
+            f"Fetching students with conflict score above: {request.threshold}"
+        )
+        results = db_controller.fetch_conflicts_over_threshold(request.threshold)
         return JSONResponse(
             content={"status": "success", "value": results, "count": len(results)}
         )
     except Exception as e:
-        api_logger.error(f"Failed to fetch students with conflict score: {e}")
-        return JSONResponse(
-            content={"status": "failure", "message": str(e)}, status_code=400
-        )
+        error = f"Failed to fetch students with conflict score: {e}"
+        api_logger.error(error)
+        raise HTTPException(status_code=400, detail=error)
 
 
 @router.post("students/fetch_students_by_affected_flag")
 async def fetch_students_by_affected_flag(
-    request: Request,
+    request: AffectedStatusRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
     # TODO:
     try:
-        data = await request.json()
-        is_affected = data.get("is_affected")
-
-        api_logger.debug(f"Fetching students with affected flag: {is_affected}")
-        results = db_controller.fetch_students_by_affected_flag(is_affected)
+        api_logger.debug(f"Fetching students with affected flag: {request.is_affected}")
+        results = db_controller.fetch_students_by_affected_flag(request.is_affected)
         return JSONResponse(
             content={"status": "success", "value": results, "count": len(results)}
         )
     except Exception as e:
-        api_logger.error(f"Failed to fetch students with affected flag: {e}")
-        return JSONResponse(
-            content={"status": "failure", "message": str(e)}, status_code=400
-        )
+        error = f"Failed to fetch students with affected flag: {e}"
+        api_logger.error(error)
+        raise HTTPException(status_code=400, detail=error)
 
 
 @router.post("students/fetch_student_by_country_and_mental_health_threshold")
 async def fetch_students_by_country_and_mental_health(
-    request: Request,
+    request: CountryAndMentalHealthRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
     # TODO:
     try:
-        data = await request.json()
-        country = data.get("country")
-        mental_health_score = data.get("mental_health_score")
-
         api_logger.debug(
-            f"Fetching students with mental health score: {mental_health_score} in country: {country}"
+            f"Fetching students with mental health score: {request.mental_health_score} in country: {request.country}"
         )
         results = db_controller.fetch_students_by_country_and_mental_health(
-            country, mental_health_score
+            request.country, request.mental_health_score
         )
         return JSONResponse(
             content={"status": "success", "value": results, "count": len(results)}
         )
     except Exception as e:
-        api_logger.error(
-            f"Failed to fetch students with mental health threshold from a specific country"
-        )
-        return JSONResponse(
-            content={"status": "failure", "message": str(e)}, status_code=400
-        )
+        error = f"Failed to fetch students with mental health threshold from a specific country: {e}"
+        api_logger.error(error)
+        raise HTTPException(status_code=400, detail=error)

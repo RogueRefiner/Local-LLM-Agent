@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 
 import requests
 from cli.service.cli_service import CliService
@@ -68,3 +69,7 @@ class CliController:
             requests.Response: The response from the prompt execution.
         """
         return self.cli_service.execute_prompt(prompt, template)
+
+    def parse_response(self, response: requests.Response) -> tuple[str, dict[str, Any]]:
+        # TODO:
+        return self.cli_service.parse_response(response)

@@ -268,13 +268,7 @@ class DatabaseService:
     ) -> list[dict[Any, Any]]:
         # TODO:
         with self.database_manager.engine.begin() as connection:
-            query = (
-                self.__get_base_student_query()
-                .join(Gender, Student.gender_id == Gender.id)
-                .join(AcademicLevel, Student.academic_level_id == AcademicLevel.id)
-                .join(Country, Student.country_id == Country.id)
-                .join(Platform, Student.platform_id == Platform.id)
-            ).where(
+            query = (self.__get_base_student_query()).where(
                 and_(
                     Gender.gender == gender,
                     AcademicLevel.academic_level == academic_level,

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import json
 import os
 from pathlib import Path
+from typing import Any
 import cutie
 import requests
 from llm.utils.prompt_request import PromptRequest
@@ -110,3 +111,7 @@ class CliService:
         """
         prompt_request = PromptRequest(prompt=prompt, template_name=template)
         return requests.post(self.llm_url, prompt_request.toJSON())
+
+    def parse_response(self, response: requests.Response) -> tuple[str, dict[str, Any]]:
+        # TODO:
+        pass
