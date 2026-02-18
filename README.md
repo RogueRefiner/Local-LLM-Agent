@@ -20,10 +20,14 @@ https://docs.astral.sh/uv/getting-started/installation/
 
 ### database
 - Start the docker container in `src/data/example/docker-compose.yml` with `docker-compose up`
-- Start the conversation docker container in `src/data/conversation/docker-compose.yml` with `docker-compose up`
+- (- Start the conversation docker container in `src/data/conversation/docker-compose.yml` with `docker-compose up`)
 - Start the API with `src/data/example_main.py`
-- Fill the example database with 
+- Fill the example database with the `http://0.0.0.0:8002/students/import` endpoint
 
 ### cli 
 - Start the CLI tool with `python src/cli/main.py`
 - Follow the instructions
+
+Next Steps: 
+  - Implement Conversation DB
+  - Implement UI to utilize Memory / longer conversations
