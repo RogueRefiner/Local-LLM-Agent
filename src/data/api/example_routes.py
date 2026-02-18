@@ -29,9 +29,6 @@ else:
     insert_data = False
 
 
-# TODO: add responses to .post methods, BaseModels for each request
-
-
 @router.get("/")
 async def health_check():
     """
@@ -111,7 +108,7 @@ async def import_students(
                         "status": "success",
                         "data": "[{'id':703,'relationship_status':'IN RELATIONSHIP','age':21,'affects_academic_performance':true,'sleep_hours_per_night':6.7,'mental_health_score':6,'conflicts_over_social_media':3,'addicted_score':7,'gender':'FEMALE','academic_level':'UNDERGRADUATE','country_name':'China'},"
                         "{'id':705,'relationship_status':'SINGLE','age':19,'affects_academic_performance':true,'sleep_hours_per_night':6.3,'mental_health_score':5,'conflicts_over_social_media':4,'addicted_score':8,'gender': 'FEMALE','academic_level':'UNDERGRADUATE','country_: '100'  name':'Poland'}]",
-                        "count": "100",
+                        "count": "2",
                     }
                 }
             },
@@ -126,7 +123,17 @@ async def fetch_by_gender_and_academic_level(
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
-    # TODO:
+    """
+    Fetches students based on gender and academic level.
+
+    Args:
+        request (GenderAndAcademicLevelRequest): The request containing gender and academic level filters.
+        db_controller (DatabaseController, optional): Dependency injection for database controller. Defaults to Depends(get_database_controller).
+        api_logger (ApplicationLogger, optional): Dependency injection for API logger. Defaults to Depends(get_application_logger).
+
+    Returns:
+        JSONResponse: A response containing the status of the operation, fetched data, and count.
+    """
     try:
         api_logger.debug(
             f"Fetching students: gender={request.gender}, academic_level={request.academic_level}"
@@ -149,13 +156,35 @@ async def fetch_by_gender_and_academic_level(
         raise HTTPException(status_code=400, detail=error)
 
 
-@router.post("/students/fetch_daily_use_for_country")
+@router.post(
+    "/students/fetch_daily_use_for_country",
+    responses={
+        200: {
+            "description": "Fetch average daily usage for all students from a country",
+            "context": {
+                "application/json": {"example": {"status": "success", "value": "5.26"}}
+            },
+        },
+        400: {"description": "Failed to fetch average daily use for a country"},
+    },
+)
 async def fetch_daily_use_for_country(
     request: CountryRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
-    # TODO:
+    """
+    Fetches average daily usage for a given country.
+
+    Args:
+
+        request (CountryRequest): The request containing the target country.
+        db_controller (DatabaseController, optional): Dependency injection for database controller. Defaults to Depends(get_database_controller).
+        api_logger (ApplicationLogger, optional): Dependency injection for API logger. Defaults to Depends(get_application_logger).
+
+    Returns:
+        JSONResponse: A response containing the status of the operation and the average daily usage data.
+    """
     try:
         api_logger.debug(f"Fetching average daily usage for country: {request.country}")
         result = db_controller.fetch_avg_daily_usage_for_country(request.country)
@@ -171,13 +200,41 @@ async def fetch_daily_use_for_country(
         raise HTTPException(status_code=400, detail=error)
 
 
-@router.post("/students/fetch_conflicts_over_threshold")
+@router.post(
+    "/students/fetch_conflicts_over_threshold",
+    responses={
+        200: {
+            "description": "Fetch all students with a certain conflict score",
+            "context": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "data": "[{'id':703,'relationship_status':'IN RELATIONSHIP','age':21,'affects_academic_performance':true,'sleep_hours_per_night':6.7,'mental_health_score':6,'conflicts_over_social_media':3,'addicted_score':7,'gender':'FEMALE','academic_level':'UNDERGRADUATE','country_name':'China'},"
+                        "{'id':705,'relationship_status':'SINGLE','age':19,'affects_academic_performance':true,'sleep_hours_per_night':6.3,'mental_health_score':5,'conflicts_over_social_media':3,'addicted_score':8,'gender': 'FEMALE','academic_level':'UNDERGRADUATE','country_: '100'  name':'Poland'}]",
+                        "count": "2",
+                    }
+                }
+            },
+        },
+        400: {"description": "Faield to fetch students with conflict score"},
+    },
+)
 async def fetch_conflicts_over_threshold(
     request: ThresholdRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
-    # TODO
+    """
+    Fetches students with conflict scores above a given threshold.
+
+    Args:
+        request (ThresholdRequest): The request containing the conflict score threshold.
+        db_controller (DatabaseController, optional): Dependency injection for database controller. Defaults to Depends(get_database_controller).
+        api_logger (ApplicationLogger, optional): Dependency injection for API logger. Defaults to Depends(get_application_logger).
+
+    Returns:
+        JSONResponse: A response containing the status of the operation, fetched data, and count.
+    """
     try:
         api_logger.debug(
             f"Fetching students with conflict score above: {request.threshold}"
@@ -192,13 +249,43 @@ async def fetch_conflicts_over_threshold(
         raise HTTPException(status_code=400, detail=error)
 
 
-@router.post("students/fetch_students_by_affected_flag")
+@router.post(
+    "students/fetch_students_by_affected_flag",
+    responses={
+        200: {
+            "description": "Fecth all students with the specific affected flag",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "value": "[{'id':703,'relationship_status':'IN RELATIONSHIP','age':21,'affects_academic_performance':true,'sleep_hours_per_night':6.7,'mental_health_score':6,'conflicts_over_social_media':3,'addicted_score':7,'gender':'FEMALE','academic_level':'UNDERGRADUATE','country_name':'China'},"
+                        "{'id':705,'relationship_status':'SINGLE','age':19,'affects_academic_performance':true,'sleep_hours_per_night':6.3,'mental_health_score':5,'conflicts_over_social_media':4,'addicted_score':8,'gender': 'FEMALE','academic_level':'UNDERGRADUATE','country_: '100'  name':'Poland'}]",
+                        "count": "2",
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Failed to fetch students with the affected flag either being true or false, depending on the query parameter"
+        },
+    },
+)
 async def fetch_students_by_affected_flag(
     request: AffectedStatusRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
-    # TODO:
+    """
+    Fetches students based on their affected flag.
+
+    Args:
+        request (AffectedStatusRequest): The request containing the affected flag status.
+        db_controller (DatabaseController, optional): Dependency injection for database controller. Defaults to Depends(get_database_controller).
+        api_logger (ApplicationLogger, optional): Dependency injection for API logger. Defaults to Depends(get_application_logger).
+
+    Returns:
+        JSONResponse: A response containing the status of the operation, fetched data, and count.
+    """
     try:
         api_logger.debug(f"Fetching students with affected flag: {request.is_affected}")
         results = db_controller.fetch_students_by_affected_flag(request.is_affected)
@@ -211,13 +298,43 @@ async def fetch_students_by_affected_flag(
         raise HTTPException(status_code=400, detail=error)
 
 
-@router.post("students/fetch_student_by_country_and_mental_health_threshold")
+@router.post(
+    "students/fetch_student_by_country_and_mental_health_threshold",
+    responses={
+        200: {
+            "description": "Fetched all students from a specific country with a specific mental health score",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "value": "[{'id':703,'relationship_status':'IN RELATIONSHIP','age':21,'affects_academic_performance':true,'sleep_hours_per_night':6.7,'mental_health_score':6,'conflicts_over_social_media':3,'addicted_score':7,'gender':'FEMALE','academic_level':'UNDERGRADUATE','country_name':'China'},"
+                        "{'id':705,'relationship_status':'SINGLE','age':19,'affects_academic_performance':true,'sleep_hours_per_night':6.3,'mental_health_score':6,'conflicts_over_social_media':4,'addicted_score':8,'gender': 'FEMALE','academic_level':'UNDERGRADUATE','country_: '100'  name':'China'}]",
+                        "count": "2",
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "Failed to fetch all students from a country with the specific mental health score"
+        },
+    },
+)
 async def fetch_students_by_country_and_mental_health(
     request: CountryAndMentalHealthRequest,
     db_controller: DatabaseController = Depends(get_database_controller),
     api_logger: ApplicationLogger = Depends(get_application_logger),
 ) -> JSONResponse:
-    # TODO:
+    """
+    Fetches students based on their mental health score within a specific country.
+
+    Args:
+        request (CountryAndMentalHealthRequest): The request containing the target country and mental health score threshold.
+        db_controller (DatabaseController, optional): Dependency injection for database controller. Defaults to Depends(get_database_controller).
+        api_logger (ApplicationLogger, optional): Dependency injection for API logger. Defaults to Depends(get_application_logger).
+
+    Returns:
+        JSONResponse: A response containing the status of the operation, fetched data, and count.
+    """
     try:
         api_logger.debug(
             f"Fetching students with mental health score: {request.mental_health_score} in country: {request.country}"

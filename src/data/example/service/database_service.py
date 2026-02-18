@@ -266,7 +266,16 @@ class DatabaseService:
     def fetch_by_gender_and_academic_level(
         self, gender: EGender, academic_level: EAcademicLevel
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students based on gender and academic level.
+
+        Args:
+            gender (EGender): The gender of the students.
+            academic_level (EAcademicLevel): The academic level of the students.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing the fetched students.
+        """
         with self.database_manager.engine.begin() as connection:
             query = (self.__get_base_student_query()).where(
                 and_(
@@ -283,7 +292,15 @@ class DatabaseService:
         return [dict(result) for result in results]
 
     def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
-        # TODO:
+        """
+        Fetch average daily usage for a specific country.
+
+        Args:
+            country (str): The name of the country.
+
+        Returns:
+            Decimal | None: The average daily usage hours or None if no results found.
+        """
         with self.database_manager.engine.begin() as connection:
             query = (
                 select(func.avg(Student.avg_daily_usage_hours))
@@ -296,7 +313,15 @@ class DatabaseService:
         return value
 
     def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch conflicts over a given threshold.
+
+        Args:
+            threshold (int): The conflict threshold.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing students with conflicts over the threshold.
+        """
         with self.database_manager.engine.begin() as connection:
             query = self.__get_base_student_query().where(
                 Student.conflicts_over_social_media > threshold
@@ -309,7 +334,15 @@ class DatabaseService:
     def fetch_students_by_affected_flag(
         self, is_affected: bool
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students by their affected flag.
+
+        Args:
+            is_affected (bool): Whether the student affects academic performance or not.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing affected students.
+        """
         with self.database_manager.engine.begin() as connection:
             query = self.__get_base_student_query().where(
                 Student.affects_academic_performance == is_affected
@@ -321,7 +354,16 @@ class DatabaseService:
     def fetch_students_by_country_and_mental_health(
         self, country: str, mental_health: int
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students based on country and mental health score.
+
+        Args:
+            country (str): The name of the country.
+            mental_health (int): The mental health score.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing students in the specified country with the given mental health score.
+        """
         with self.database_manager.engine.begin() as connection:
             query = self.__get_base_student_query().where(
                 and_(
@@ -336,7 +378,12 @@ class DatabaseService:
         return [dict(result) for result in results]
 
     def __get_base_student_query(self) -> Select[Any]:
-        # TODO:
+        """
+        Get the base student query with joins to related tables.
+
+        Returns:
+            Select[Any]: A SQLAlchemy select statement for fetching student data.
+        """
         return (
             select(
                 Student.id,

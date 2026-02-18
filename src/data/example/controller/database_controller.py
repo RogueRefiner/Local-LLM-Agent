@@ -51,29 +51,71 @@ class DatabaseController:
     def fetch_by_gender_and_academic_level(
         self, gender: EGender, academic_level: EAcademicLevel
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students by gender and academic level.
+
+        Args:
+            gender (EGender): The gender of the students.
+            academic_level (EAcademicLevel): The academic level of the students.
+
+        Returns:
+            list[dict[Any, Any]]: A list of student dictionaries.
+        """
         return self.database_service.fetch_by_gender_and_academic_level(
             gender, academic_level
         )
 
     def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
-        # TODO:
+        """
+        Fetch average daily usage for a specific country.
+
+        Args:
+            country (str): The name of the country.
+
+        Returns:
+            Decimal | None: The average daily usage if found, otherwise None.
+        """
         return self.database_service.fetch_avg_daily_usage_for_country(country)
 
     def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch conflicts over a given threshold.
+
+        Args:
+            threshold (int): The threshold value.
+
+        Returns:
+            list[dict[Any, Any]]: A list of conflict dictionaries.
+        """
         return self.database_service.fetch_conflicts_over_threshold(threshold)
 
     def fetch_students_by_affected_flag(
         self, is_affected: bool
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students by their affected flag.
+
+        Args:
+            is_affected (bool): The state of the affected flag.
+
+        Returns:
+            list[dict[Any, Any]]: A list of student dictionaries.
+        """
         return self.database_service.fetch_students_by_affected_flag(is_affected)
 
     def fetch_students_by_country_and_mental_health(
         self, country: str, mental_health: int
     ) -> list[dict[Any, Any]]:
-        # TODO:
+        """
+        Fetch students by country and mental health level.
+
+        Args:
+            country (str): The name of the country.
+            mental_health (int): The mental health level of the students.
+
+        Returns:
+            list[dict[Any, Any]]: A list of student dictionaries.
+        """
         return self.database_service.fetch_students_by_country_and_mental_health(
             country, mental_health
         )

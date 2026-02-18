@@ -64,8 +64,14 @@ class ApiService:
             model="qwen2.5-coder:7b",
             messages=[{"role": "user", "content": prompt}],
             stream=True,
+            options={
+                "num_thread": 4,  # Match physical cores, not logical threads
+                "num_flash_attn": True,  # Highly recommended for speed
+                "num_batch": 128,  # Lowering from default 512 can help mobile CPUs
+                "num_ctx": 4096,  # Keep this as small as your task allows
+                "f16_kv": True,  # Uses half-precision for key/value cache
+            },
         )
-
         for chunk in response:
             print(chunk.message.content, end="", flush=True)
         print("\n")

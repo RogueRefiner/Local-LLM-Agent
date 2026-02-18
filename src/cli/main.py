@@ -17,4 +17,4 @@ if __name__ == "__main__":
         logger.debug(
             f"Response: {response}\nResponse.status_code: {response.status_code}\n"
         )
-        endpoint, parfameters = cli_controller.parse_response(response)
+        # endpoint, parameters = cli_controller.parse_response(response)
