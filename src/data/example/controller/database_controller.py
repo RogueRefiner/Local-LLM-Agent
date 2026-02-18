@@ -22,6 +22,11 @@ class DatabaseController:
     Methods:
         read_csv(self, filepath: Path, index_column: str) -> pd.DataFrame: Reads data from a CSV file and returns it as a pandas DataFrame.
         insert_data(self, df: pd.DataFrame) -> None: Inserts the provided pandas DataFrame into the database.
+        fetch_by_gender_and_academic_level(gender: EGender, academic_level: EAcademicLevel) -> list[dict[Any, Any]]: Fetch students by gender and academic level.
+        fetch_avg_daily_usage_for_country(country: str) -> Decimal | None: Fetch average daily usage for a specific country.
+        fetch_conflicts_over_threshold(threshold: int) -> list[dict[Any, Any]]: Fetch conflicts over a given threshold.
+        fetch_students_by_affected_flag(is_affected: bool) -> list[dict[Any, Any]]: Fetch students by their affected flag.
+        fetch_students_by_country_and_mental_health(country: str, mental_health: int) -> list[dict[Any, Any]]: Fetch students by country and mental health level.
     """
 
     database_service: DatabaseService = field(default_factory=lambda: DatabaseService())

@@ -16,6 +16,7 @@ class CliController:
         choose_prompt_option() -> str: Choose a prompt option from available options.
         enter_prompt(prompt_option: str) -> str: Enter a prompt based on the selected option.
         execute_prompt(prompt: str, template: str) -> requests.Response: Execute a prompt using the specified template and return the response.
+        parse_response(response: dict[Any, Any]) -> tuple[str, str, dict[str, str], dict[str, Any]]: Parses a response dictionary into its constituent parts.
     """
 
     cli_service: CliService = field(default_factory=lambda: CliService())
@@ -70,6 +71,16 @@ class CliController:
         """
         return self.cli_service.execute_prompt(prompt, template)
 
-    def parse_response(self, response: requests.Response) -> tuple[str, dict[str, Any]]:
-        # TODO:
+    def parse_response(
+        self, response: dict[Any, Any]
+    ) -> tuple[str, str, dict[str, str], dict[str, Any]]:
+        """
+        Parses a response dictionary into its constituent parts.
+
+        Args:
+            response (dict[Any, Any]): The response dictionary to parse.
+
+        Returns:
+            tuple[str, str, dict[str, str], dict[str, Any]]: A tuple containing the URL, endpoint, headers, and parameters.
+        """
         return self.cli_service.parse_response(response)

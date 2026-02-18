@@ -18,6 +18,7 @@ class ApiControlller:
         build_final_prompt(prompt: str, template_name: str) -> str:
             Builds the final prompt by combining the input prompt with the specified template.
         run_prompt(prompt: str) -> None: Runs the provided prompt using the api_service.
+        extract_json(text: str) -> str: Extracts JSON from a text string by removing any surrounding code blocks or syntax.
     """
 
     template_dict: dict[str, str] = field(
@@ -38,14 +39,26 @@ class ApiControlller:
         """
         return self.api_service.build_final_prompt(prompt, template_name)
 
-    def run_prompt(self, prompt: str) -> None:
+    def run_prompt(self, prompt: str) -> str:
         """
         Runs the provided prompt using the api_service.
 
         Args:
             prompt (str): The prompt to be run.
         """
-        self.api_service.run_prompt(prompt)
+        return self.api_service.run_prompt(prompt)
+
+    def extract_json(self, text: str) -> str:
+        """
+        Extracts JSON from a text string by removing any surrounding code blocks or syntax.
+
+        Args:
+            text (str): The text string containing JSON data.
+
+        Returns:
+            str: The extracted JSON data as a string.
+        """
+        return self.api_service.extract_json(text)
 
 
 def get_api_controller() -> ApiControlller:

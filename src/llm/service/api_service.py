@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 from string import Template
 from ollama import chat
+import re
+import json
 
 
 @dataclass
@@ -16,7 +18,7 @@ class ApiService:
     Methods:
         build_final_prompt(prompt: str, template_name: str) -> str: Builds the final prompt using a specified template.
         run_prompt(prompt: str) -> None: Runs the given prompt through a chat model and prints the response.
-
+        extract_json(text: str) -> str: Extracts JSON from a text string by removing any surrounding code blocks or syntax.
     """
 
     api_logger: ApplicationLogger = field(default_factory=lambda: ApplicationLogger())
@@ -53,25 +55,45 @@ class ApiService:
 
         return prompt
 
-    def run_prompt(self, prompt: str) -> None:
+    def run_prompt(self, prompt: str) -> str:
         """Runs the provided prompt through a chat model.
 
         Args:
             prompt (str): The prompt to be sent to the chat model.
         """
+        ret = ""
         self.api_logger.debug("Running prompt")
         response = chat(
             model="qwen2.5-coder:7b",
             messages=[{"role": "user", "content": prompt}],
             stream=True,
             options={
-                "num_thread": 4,  # Match physical cores, not logical threads
-                "num_flash_attn": True,  # Highly recommended for speed
-                "num_batch": 128,  # Lowering from default 512 can help mobile CPUs
-                "num_ctx": 4096,  # Keep this as small as your task allows
-                "f16_kv": True,  # Uses half-precision for key/value cache
+                "num_thread": 4,
+                "num_flash_attn": True,
+                "num_batch": 128,
+                "num_ctx": 4096,
+                "f16_kv": True,
             },
         )
         for chunk in response:
-            print(chunk.message.content, end="", flush=True)
+            msg_chunk = chunk.message.content
+            if type(msg_chunk) == str:
+                ret += msg_chunk
+            print(msg_chunk, end="", flush=True)
         print("\n")
+        return ret
+
+    def extract_json(self, text: str) -> str:
+        """
+        Extracts JSON from a text string by removing any surrounding code blocks or syntax.
+
+        Args:
+            text (str): The text string containing JSON data.
+
+        Returns:
+            str: The extracted JSON data as a string.
+        """
+        cleaned = re.sub(
+            r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.IGNORECASE
+        )
+        return json.loads(cleaned)

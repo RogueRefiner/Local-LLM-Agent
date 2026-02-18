@@ -250,7 +250,7 @@ async def fetch_conflicts_over_threshold(
 
 
 @router.post(
-    "students/fetch_students_by_affected_flag",
+    "/students/fetch_students_by_affected_flag",
     responses={
         200: {
             "description": "Fecth all students with the specific affected flag",
@@ -299,7 +299,7 @@ async def fetch_students_by_affected_flag(
 
 
 @router.post(
-    "students/fetch_student_by_country_and_mental_health_threshold",
+    "/students/fetch_student_by_country_and_mental_health_threshold",
     responses={
         200: {
             "description": "Fetched all students from a specific country with a specific mental health score",

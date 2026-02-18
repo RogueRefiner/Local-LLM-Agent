@@ -26,12 +26,19 @@ async def execute_prompt(
     """
     api_logger.debug(f"/prompt endpoint called with request: {request}")
     prompt = api_controller.build_final_prompt(request.prompt, request.template_name)
-    api_controller.run_prompt(prompt)
+    response = api_controller.run_prompt(prompt)
     api_logger.debug(f"Prompt execution finished")
+
+    extracted = ""
+    try:
+        api_controller.extract_json(response)
+    except Exception:
+        pass
 
     return JSONResponse(
         content={
             "status": "success",
             "template": request.template_name,
+            "response": extracted,
         }
     )

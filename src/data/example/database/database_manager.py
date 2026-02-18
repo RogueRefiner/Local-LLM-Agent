@@ -27,7 +27,8 @@ class DatabaseManager:
 
     Methods:
         __post_init__(): Initializes the database connection and verifies that all expected tables are created.
-        insert(self, table_name: str, data: list[dict[str, Any]]) -> None | list[int]:
+        insert_dimension_tables(table_name: str, column_name: str, data: list[dict[str, Any]]) -> None | dict[str, int]: Inserts data into a specified database table.
+        insert_fact_table(table_name: str, data: DataFrame) -> None: Inserts data into a fact table.
     """
 
     database: str
@@ -110,8 +111,8 @@ class DatabaseManager:
     def insert_fact_table(self, table_name: str, data: DataFrame) -> None:
         """
         Inserts data into a fact table.
-        Args:
 
+        Args:
             table_name (str): The name of the table.
             data (DataFrame): The data to insert.
         """

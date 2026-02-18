@@ -38,6 +38,15 @@ class DatabaseService:
         - __insert_countries(table_name: str, countries: np.ndarray) -> None | list[int]: Inserts country data into the database.
         - __insert_platforms(table_name: str, platforms: np.ndarray) -> None | list[int]: Inserts platform data into the database.
         - __insert_students(table_name: str, df: pd.DataFrame) -> None: Inserts student data from a DataFrame into the database.
+        - __prepare_foreign_keys(df: pd.DataFrame, gender_ids: None | dict[str, int], academic_level_ids: None | dict[str, int], country_ids: None | dict[str, int], platform_ids: None | dict[str, int]) -> pd.DataFrame: Prepares foreign keys for the DataFrame based on the provided dictionaries.
+        - __prepare_relationship_status(df: pd.DataFrame, column_name: str) -> pd.DataFrame: Prepares the relationship status column in the DataFrame.
+        - __prepare_column_names(df: pd.DataFrame) -> pd.DataFrame: Prepares the column names for the DataFrame by converting them to lowercase and dropping unnecessary columns.
+        - __get_base_student_query() -> Select[Any]: Get the base student query with joins to related tables.
+        - fetch_by_gender_and_academic_level(gender: EGender, academic_level: EAcademicLevel) -> list[dict[Any, Any]]: Fetch students by gender and academic level.
+        - fetch_avg_daily_usage_for_country(country: str) -> Decimal | None: Fetch average daily usage for a specific country.
+        - fetch_conflicts_over_threshold(threshold: int) -> list[dict[Any, Any]]: Fetch conflicts over a given threshold.
+        - fetch_students_by_affected_flag(is_affected: bool) -> list[dict[Any, Any]]: Fetch students by their affected flag.
+        - fetch_students_by_country_and_mental_health(country: str, mental_health: int) -> list[dict[Any, Any]]: Fetch students by country and mental health level.
     """
 
     logger: ApplicationLogger = field(default_factory=lambda: ApplicationLogger())
@@ -69,6 +78,120 @@ class DatabaseService:
             "students", df, gender_ids, academic_level_ids, country_ids, platform_ids
         )
         self.logger.debug(f"students successfully inserted")
+
+    def fetch_by_gender_and_academic_level(
+        self, gender: EGender, academic_level: EAcademicLevel
+    ) -> list[dict[Any, Any]]:
+        """
+        Fetch students based on gender and academic level.
+
+        Args:
+            gender (EGender): The gender of the students.
+            academic_level (EAcademicLevel): The academic level of the students.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing the fetched students.
+        """
+        with self.database_manager.engine.begin() as connection:
+            query = (self.__get_base_student_query()).where(
+                and_(
+                    Gender.gender == gender,
+                    AcademicLevel.academic_level == academic_level,
+                )
+            )
+
+            self.logger.debug(
+                f"Executing query for gender={gender}, academic_level={academic_level}"
+            )
+            results = connection.execute(query).mappings().all()
+
+        return [dict(result) for result in results]
+
+    def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
+        """
+        Fetch average daily usage for a specific country.
+
+        Args:
+            country (str): The name of the country.
+
+        Returns:
+            Decimal | None: The average daily usage hours or None if no results found.
+        """
+        with self.database_manager.engine.begin() as connection:
+            query = (
+                select(func.avg(Student.avg_daily_usage_hours))
+                .join(Country, Student.country_id == Country.id)
+                .where(Country.country_name == country)
+            )
+            self.logger.debug(f"Executing query for country: {country}")
+            result = connection.execute(query).fetchone()
+            value: Decimal | None = result[0] if result else None
+        return value
+
+    def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
+        """
+        Fetch conflicts over a given threshold.
+
+        Args:
+            threshold (int): The conflict threshold.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing students with conflicts over the threshold.
+        """
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                Student.conflicts_over_social_media > threshold
+            )
+            self.logger.debug(f"Executing query for threshold: {threshold}")
+            results = connection.execute(query).mappings().all()
+
+        return [dict(result) for result in results]
+
+    def fetch_students_by_affected_flag(
+        self, is_affected: bool
+    ) -> list[dict[Any, Any]]:
+        """
+        Fetch students by their affected flag.
+
+        Args:
+            is_affected (bool): Whether the student affects academic performance or not.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing affected students.
+        """
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                Student.affects_academic_performance == is_affected
+            )
+            self.logger.debug(f"Executing query for is_affected: {is_affected}")
+            results = connection.execute(query).mappings().all()
+        return [dict(result) for result in results]
+
+    def fetch_students_by_country_and_mental_health(
+        self, country: str, mental_health: int
+    ) -> list[dict[Any, Any]]:
+        """
+        Fetch students based on country and mental health score.
+
+        Args:
+            country (str): The name of the country.
+            mental_health (int): The mental health score.
+
+        Returns:
+            list[dict[Any, Any]]: List of dictionaries representing students in the specified country with the given mental health score.
+        """
+        with self.database_manager.engine.begin() as connection:
+            query = self.__get_base_student_query().where(
+                and_(
+                    Country.country_name == country,
+                    Student.mental_health_score == mental_health,
+                )
+            )
+            self.logger.debug(
+                f"Executing query for country: {country} and mental health score: {mental_health}"
+            )
+            results = connection.execute(query).mappings().all()
+        return [dict(result) for result in results]
 
     def __insert_genders(
         self, table_name: str, column_name: str, genders: np.ndarray
@@ -262,120 +385,6 @@ class DatabaseService:
         columns = {column: column.lower() for column in df.columns}
         df.rename(columns=columns, inplace=True)
         return df
-
-    def fetch_by_gender_and_academic_level(
-        self, gender: EGender, academic_level: EAcademicLevel
-    ) -> list[dict[Any, Any]]:
-        """
-        Fetch students based on gender and academic level.
-
-        Args:
-            gender (EGender): The gender of the students.
-            academic_level (EAcademicLevel): The academic level of the students.
-
-        Returns:
-            list[dict[Any, Any]]: List of dictionaries representing the fetched students.
-        """
-        with self.database_manager.engine.begin() as connection:
-            query = (self.__get_base_student_query()).where(
-                and_(
-                    Gender.gender == gender,
-                    AcademicLevel.academic_level == academic_level,
-                )
-            )
-
-            self.logger.debug(
-                f"Executing query for gender={gender}, academic_level={academic_level}"
-            )
-            results = connection.execute(query).mappings().all()
-
-        return [dict(result) for result in results]
-
-    def fetch_avg_daily_usage_for_country(self, country: str) -> Decimal | None:
-        """
-        Fetch average daily usage for a specific country.
-
-        Args:
-            country (str): The name of the country.
-
-        Returns:
-            Decimal | None: The average daily usage hours or None if no results found.
-        """
-        with self.database_manager.engine.begin() as connection:
-            query = (
-                select(func.avg(Student.avg_daily_usage_hours))
-                .join(Country, Student.country_id == Country.id)
-                .where(Country.country_name == country)
-            )
-            self.logger.debug(f"Executing query for country: {country}")
-            result = connection.execute(query).fetchone()
-            value: Decimal | None = result[0] if result else None
-        return value
-
-    def fetch_conflicts_over_threshold(self, threshold: int) -> list[dict[Any, Any]]:
-        """
-        Fetch conflicts over a given threshold.
-
-        Args:
-            threshold (int): The conflict threshold.
-
-        Returns:
-            list[dict[Any, Any]]: List of dictionaries representing students with conflicts over the threshold.
-        """
-        with self.database_manager.engine.begin() as connection:
-            query = self.__get_base_student_query().where(
-                Student.conflicts_over_social_media > threshold
-            )
-            self.logger.debug(f"Executing query for threshold: {threshold}")
-            results = connection.execute(query).mappings().all()
-
-        return [dict(result) for result in results]
-
-    def fetch_students_by_affected_flag(
-        self, is_affected: bool
-    ) -> list[dict[Any, Any]]:
-        """
-        Fetch students by their affected flag.
-
-        Args:
-            is_affected (bool): Whether the student affects academic performance or not.
-
-        Returns:
-            list[dict[Any, Any]]: List of dictionaries representing affected students.
-        """
-        with self.database_manager.engine.begin() as connection:
-            query = self.__get_base_student_query().where(
-                Student.affects_academic_performance == is_affected
-            )
-            self.logger.debug(f"Executing query for is_affected: {is_affected}")
-            results = connection.execute(query).mappings().all()
-        return [dict(result) for result in results]
-
-    def fetch_students_by_country_and_mental_health(
-        self, country: str, mental_health: int
-    ) -> list[dict[Any, Any]]:
-        """
-        Fetch students based on country and mental health score.
-
-        Args:
-            country (str): The name of the country.
-            mental_health (int): The mental health score.
-
-        Returns:
-            list[dict[Any, Any]]: List of dictionaries representing students in the specified country with the given mental health score.
-        """
-        with self.database_manager.engine.begin() as connection:
-            query = self.__get_base_student_query().where(
-                and_(
-                    Country.country_name == country,
-                    Student.mental_health_score == mental_health,
-                )
-            )
-            self.logger.debug(
-                f"Executing query for country: {country} and mental health score: {mental_health}"
-            )
-            results = connection.execute(query).mappings().all()
-        return [dict(result) for result in results]
 
     def __get_base_student_query(self) -> Select[Any]:
         """
